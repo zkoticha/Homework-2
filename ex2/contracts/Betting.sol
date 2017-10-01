@@ -29,12 +29,13 @@ contract Betting {
 	modifier OwnerOnly() {
 		if (msg.sender == owner) _;
 	}
-	modifier OracleOnly() {_;}
+	modifier OracleOnly() {
+		if (msg.sender == oracle) _;
+	}
 
 	/* Constructor function, where owner and outcomes are set */
 	function Betting(uint[] _outcomes) {
 		num_gamblers = 0;
-
 		owner = msg.sender;
 		outcomes = _outcomes;
 	}
@@ -48,6 +49,7 @@ contract Betting {
 
 	/* Gamblers place their bets, preferably after calling checkOutcomes */
 	function makeBet(uint _outcome) payable returns (bool) {
+		BetMade(msg.sender);
 		require(msg.sender != oracle);
 		//require(tx.origin != oracle);
 		//require(tx.origin != owner);
@@ -73,17 +75,38 @@ contract Betting {
 
 	/* The oracle chooses which outcome wins */
 	function makeDecision(uint _outcome) OracleOnly() {
+		BetClosed();
+		uint guessA = bets[gamblerA].outcome;
+		uint guessB = bets[gamblerB].outcome;
+		uint amtA = bets[gamblerA].amount;
+		uint amtB = bets[gamblerB].amount;
+		if (guessA == _outcome) {
+			if (guessB == _outcome) {
+				winnings[gamblerA] = winnings[gamblerA] + amtA;
+				winnings[gamblerB] = winnings[gamblerB] + amtB;
+			} else{
+				winnings[gamblerA] = winnings[gamblerA] + amtA + amtB;
+			}
+		} else {
+			if (guessB == _outcome) {
+				winnings[gamblerB] = winnings[gamblerB] + amtA + amtB;
+			} else {
+				winnings[oracle] = winnings[oracle] + amtA + amtB;
+			}
+		}
 
+		contractReset();
 	}
 
 	/* Allow anyone to withdraw their winnings safely (if they have enough) */
 	function withdraw(uint withdrawAmount) returns (uint remainingBal) {
 		require(withdrawAmount<=winnings[msg.sender]);
 		uint bal = winnings[msg.sender];
+
 		remainingBal = winnings[msg.sender] - withdrawAmount;
 		winnings[msg.sender] = remainingBal;
-		msg.sender.transfer(withdrawAmount);
-
+		msg.sender.transfer(withdrawAmount - (withdrawAmount/10));
+		owner.transfer(withdrawAmount/10);
 	}
 	
 	/* Allow anyone to check the outcomes they can bet on */
@@ -98,6 +121,9 @@ contract Betting {
 
 	/* Call delete() to reset certain state variables. Which ones? That's upto you to decide */
 	function contractReset() private {
+		delete(gamblerA);
+		delete(gamblerB);
+		delete(num_gamblers);
 	}
 
 	/* Fallback function */
