@@ -13,17 +13,11 @@ contract BettingTest {
 		Assert.equal(oracle, expected, "Oracle chosen by Owner should be registered.");
 	}
 
-	/**	************************************************************ */
-	/**	The test below does not work in Solidity, see bettingTest.js */
-	/**	************************************************************ */
-
-	// function testMakeBet() {
-	// 	address exampleA = 0x4b0897b0513fdc7c541b6d9d7e929c4e5364d2db;
-	//	address exampleB = 0x583031d1113ad414f02576bd6afabfb302140225;
-	// 	bool boolA = betting.makeBet(1, {from: exampleA, value: 600});
-	// 	bool boolB = betting.makeBet(2, {from: exampleB, value: 600});
-	// 	address gamblerA = betting.gamblerA();
-	// 	Assert.equal(boolA, true, "GamblerA should be set correctly.");
-	// 	Assert.equal(gamblerA, exampleA, "GamblerA should be set to correct address.");
-	// }
+	 function testMakeBet() {
+	 	address exampleA = this;
+	 	bool boolA = betting.makeBet(1);
+	 	address gamblerA = betting.gamblerA();
+		 Assert.equal(boolA, true, "GamblerA should be set correctly.");
+	 	Assert.equal(gamblerA, exampleA, "GamblerA should be set to correct address.");
+	 }
 }

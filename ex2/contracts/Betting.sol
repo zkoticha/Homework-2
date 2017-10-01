@@ -5,6 +5,7 @@ contract Betting {
 	address public owner;
 	address public gamblerA;
 	address public gamblerB;
+	uint public num_gamblers;
 	address public oracle;
 	uint[] internal outcomes;	// Feel free to replace with a mapping
 
@@ -32,6 +33,8 @@ contract Betting {
 
 	/* Constructor function, where owner and outcomes are set */
 	function Betting(uint[] _outcomes) {
+		num_gamblers = 0;
+
 		owner = msg.sender;
 		outcomes = _outcomes;
 	}
@@ -46,15 +49,26 @@ contract Betting {
 	/* Gamblers place their bets, preferably after calling checkOutcomes */
 	function makeBet(uint _outcome) payable returns (bool) {
 		require(msg.sender != oracle);
-		require(tx.origin != oracle);
-		require(tx.origin != owner);
+		//require(tx.origin != oracle);
+		//require(tx.origin != owner);
 		require(msg.sender != owner);
+
+		//require(num_gamblers<2);
+		if (num_gamblers == 0) {
+			gamblerA = msg.sender;
+		} else {
+			require(msg.sender != gamblerA);
+			gamblerB = msg.sender;
+		}
+		num_gamblers = num_gamblers + 1;
+
 
 		Bet memory b;
 		b.outcome = _outcome;
 		b.amount = msg.value;
 		b.initialized = true;
 		bets[msg.sender] = b;
+		return true;
 	}
 
 	/* The oracle chooses which outcome wins */

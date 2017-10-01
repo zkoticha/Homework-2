@@ -59,4 +59,27 @@ contract('BettingTestOracleSet', function(accounts) {
 				"values should both be uninitialized addresses");
 		});
 	});
+
+    // The contract is deployed, owner and outcomes are set (e.g. [1, 2, 3, 4])
+    // Owner chooses their oracle
+    // User at address A makes a bet of 50 wei on outcome 1, becomes gamblerA
+    // User at address B makes a bet of 210 wei on outcome 2, becomes gamblerB
+    // User at address A makes a bet on outcome 3, is not allowed to do so (each gambler can only bet once)
+    // User at address G tries to make a bet, is not allowed to do so (only two gamblers in the vanilla contract)
+    // Oracle decided on the correct outcome, chooses outcome 2
+    // Winnings are dispersed, the game is over and gamblerA and gamblerB are removed from the game
+    // User at address B withdraws the winnings they earned (260 wei) when they gambled on outcome 2
+
+	// it(
+     //    // function testMakeBet() {
+     //    // 	address exampleA = 0x4b0897b0513fdc7c541b6d9d7e929c4e5364d2db;
+     //    //	address exampleB = 0x583031d1113ad414f02576bd6afabfb302140225;
+     //    // 	bool boolA = betting.makeBet(1, {from: exampleA, value: 600});
+     //    // 	bool boolB = betting.makeBet(2, {from: exampleB, value: 600});
+     //    // 	address gamblerA = betting.gamblerA();
+     //    // 	Assert.equal(boolA, true, "GamblerA should be set correctly.");
+     //    // 	Assert.equal(gamblerA, exampleA, "GamblerA should be set to correct address.");
+     //    // }
+	// )
+
 });
