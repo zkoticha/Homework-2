@@ -6,7 +6,7 @@ contract Betting {
 	address public gamblerA;
 	address public gamblerB;
 	address public oracle;
-	uint[] outcomes;	// Feel free to replace with a mapping
+	uint[] internal outcomes;	// Feel free to replace with a mapping
 
 	/* Structs are custom data structures with self-defined parameters */
 	struct Bet {
@@ -25,35 +25,61 @@ contract Betting {
 	event BetClosed();
 
 	/* Uh Oh, what are these? */
-	modifier OwnerOnly() {_;}
+	modifier OwnerOnly() {
+		if (msg.sender == owner) _;
+	}
 	modifier OracleOnly() {_;}
 
 	/* Constructor function, where owner and outcomes are set */
-	function BettingContract(uint[] _outcomes) {
+	function Betting(uint[] _outcomes) {
+		owner = msg.sender;
+		outcomes = _outcomes;
 	}
 
 	/* Owner chooses their trusted Oracle */
 	function chooseOracle(address _oracle) OwnerOnly() returns (address) {
+		//THIS ALLOWS OWNER TO CHANGE ORACLE AT ANY TIME BAD!!
+		oracle  = _oracle;
+		return oracle;
 	}
 
 	/* Gamblers place their bets, preferably after calling checkOutcomes */
 	function makeBet(uint _outcome) payable returns (bool) {
+		require(msg.sender != oracle);
+		require(tx.origin != oracle);
+		require(tx.origin != owner);
+		require(msg.sender != owner);
+
+		Bet memory b;
+		b.outcome = _outcome;
+		b.amount = msg.value;
+		b.initialized = true;
+		bets[msg.sender] = b;
 	}
 
 	/* The oracle chooses which outcome wins */
 	function makeDecision(uint _outcome) OracleOnly() {
+
 	}
 
 	/* Allow anyone to withdraw their winnings safely (if they have enough) */
 	function withdraw(uint withdrawAmount) returns (uint remainingBal) {
+		require(withdrawAmount<=winnings[msg.sender]);
+		uint bal = winnings[msg.sender];
+		remainingBal = winnings[msg.sender] - withdrawAmount;
+		winnings[msg.sender] = remainingBal;
+		msg.sender.transfer(withdrawAmount);
+
 	}
 	
 	/* Allow anyone to check the outcomes they can bet on */
 	function checkOutcomes() constant returns (uint[]) {
+		return outcomes;
 	}
 	
 	/* Allow anyone to check if they won any bets */
 	function checkWinnings() constant returns(uint) {
+		return winnings[msg.sender];
 	}
 
 	/* Call delete() to reset certain state variables. Which ones? That's upto you to decide */
